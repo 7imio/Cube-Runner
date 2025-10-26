@@ -9,6 +9,7 @@ TagManager:
   - Pool
   - Obstacle
   - Enemy
+  - Light
   layers:
   - Default
   - TransparentFX

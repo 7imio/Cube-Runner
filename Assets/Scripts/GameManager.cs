@@ -17,7 +17,6 @@ public class GameManager : MonoBehaviour
     [Header("Player refs")]
     public GameObject hero;
 
-
     [Header("Enemies refs")]
     public float enemySpeed = 8f;
     public float speedIncreaseRate = .1f;
@@ -28,6 +27,8 @@ public class GameManager : MonoBehaviour
     public float bestScore;
     private const string BEST_KEY = "BEST_SCORE_SECONDS";
 
+    private LightRotation _light;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -36,6 +37,8 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        _light = GameObject.FindWithTag("Light").GetComponent<LightRotation>();
 
         bestScore = PlayerPrefs.GetFloat(BEST_KEY, 0f);
     }
@@ -78,6 +81,7 @@ public class GameManager : MonoBehaviour
         if (hero != null)
             hero.GetComponent<PlayerMovement>().ResetForNewRun();
         SetState(GameState.Playing);
+        EnableLightRotation();
     }
 
     public void GameOver()
@@ -90,6 +94,7 @@ public class GameManager : MonoBehaviour
         }
 
         SetState(GameState.GameOver);
+        DisableLightRotation();
     }
     public void RestartToMenu()
     {
@@ -99,6 +104,17 @@ public class GameManager : MonoBehaviour
         ClearAllObstacles();
         ClearHeroPosition();
         ClearFloorPosition();
+
+    }
+
+    private void EnableLightRotation() {
+        if (_light == null) return;
+        _light.EnableRotation();
+    }
+    private void DisableLightRotation()
+    {
+        if (_light == null) return;
+        _light.DisableRotation();
     }
 
     private void ResetSpawner()
