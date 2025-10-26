@@ -11,7 +11,9 @@ public class EnemySpawner : MonoBehaviour
     public float spawnY = .5f;
 
     [Header("Timing")]
-    public float spawnInterval = 1.5f;
+    public float spawnInterval;
+    public float baseSpawnInterval = 1.5f;
+    public float spawnIncreaseRate = 0.5f;
     private float _timer;
 
     [Header("Cleaning")]
@@ -26,8 +28,14 @@ public class EnemySpawner : MonoBehaviour
         {
             hero = GameObject.FindWithTag("Player")?.transform;
         }
+        ResetSpawnInterval();
     }
     
+    public void ResetSpawnInterval()
+    {
+        spawnInterval = baseSpawnInterval;
+    }
+
     private void Update()
     {
         // if not playing, not spawning
@@ -38,6 +46,7 @@ public class EnemySpawner : MonoBehaviour
         {
             _timer = 0f;
             SpawnEnemy();
+            spawnInterval -= spawnIncreaseRate * Time.deltaTime;
         }
         // basic cleanup
         CleanupEnemies();

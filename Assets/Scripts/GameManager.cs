@@ -23,6 +23,11 @@ public class GameManager : MonoBehaviour
     public float speedIncreaseRate = .1f;
     public float baseEnemySpeed = 8f;
 
+    [Header("Score")]
+    public float score;
+    public float bestScore;
+    private const string BEST_KEY = "BEST_SCORE_SECONDS";
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -30,10 +35,9 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
 
-
+        bestScore = PlayerPrefs.GetFloat(BEST_KEY, 0f);
     }
 
     private void Start()
@@ -56,6 +60,7 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.Playing:
+                score += Time.deltaTime;
                 enemySpeed += speedIncreaseRate * Time.deltaTime;
                 break;
 
@@ -77,13 +82,35 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        if (score > bestScore)
+        {
+            bestScore = score;
+            PlayerPrefs.SetFloat(BEST_KEY, bestScore);
+            PlayerPrefs.Save();
+        }
+
         SetState(GameState.GameOver);
     }
     public void RestartToMenu()
     {
         SetState(GameState.Menu);
+        ResetScore();
+        ResetSpawner();
         ClearAllObstacles();
         ClearHeroPosition();
+        ClearFloorPosition();
+    }
+
+    private void ResetSpawner()
+    {
+        EnemySpawner spawner = GameObject.FindWithTag("Spawner").GetComponent<EnemySpawner>();
+        if (spawner == null) return;
+        spawner.ResetSpawnInterval();
+    }
+
+    private void ResetScore()
+    {
+        score = 0f;
     }
 
     private void ClearAllObstacles()
@@ -102,6 +129,16 @@ public class GameManager : MonoBehaviour
     {
         if (!hero) return;
         hero.transform.position = hero.GetComponent<PlayerMovement>().initialPosision;
+        var rb = hero.GetComponent<Rigidbody>();
+        if (rb != null) rb.linearVelocity = Vector3.zero;
+    }
+
+    private void ClearFloorPosition()
+    {
+        FloorFollower floorFollower = GameObject.FindWithTag("Floor").GetComponent<FloorFollower>();
+        if (floorFollower == null) return;
+        floorFollower.ResetFloor();
+
     }
 
     private void SetState(GameState newState)
